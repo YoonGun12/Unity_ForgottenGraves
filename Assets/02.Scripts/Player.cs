@@ -12,12 +12,14 @@ public class Player : MonoBehaviour
     private Vector2 RaycastVector;
     private GameObject scanObject;
     private Rigidbody2D rigid;
+    private Animator anim;
 
     public DialogueManager dialogueManager;
 
     private void Awake()
     {
         rigid = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
     }
 
     private void Update()
@@ -57,6 +59,21 @@ public class Player : MonoBehaviour
         else
         {
             inputVec = Vector2.zero;
+        }
+
+        if (anim.GetInteger("h") != h)
+        {
+            anim.SetBool("isChange", true);
+            anim.SetInteger("h", (int)h);
+        }
+        else if (anim.GetInteger("v") != v)
+        {
+            anim.SetBool("isChange", true);
+            anim.SetInteger("v", (int)v);
+        }
+        else
+        {
+            anim.SetBool("isChange", false);
         }
     }
 
