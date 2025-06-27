@@ -6,6 +6,54 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/01.Scenes/Forgatten Graves.unity
+    path: Assets/01.Scenes/01. Core/MainMenu.unity
+    guid: 7240c18a152a8e74d958f061133d35b5
+  - enabled: 1
+    path: Assets/01.Scenes/01. Core/GameManager.unity
+    guid: 2335982b513c55148a369b38017b6f1f
+  - enabled: 1
+    path: Assets/01.Scenes/02. Prologue/Prologue1.unity
+    guid: 95dbed89fa07b6e44947078956457d6f
+  - enabled: 1
+    path: Assets/01.Scenes/02. Prologue/Prologue2.unity
+    guid: 2658f4ef2523c9843bb3cf567bbf515c
+  - enabled: 1
+    path: Assets/01.Scenes/02. Prologue/Prologue3.unity
+    guid: 88248e535d783e2448d67d4a1e6e6153
+  - enabled: 1
+    path: Assets/01.Scenes/03. Main/Cemetery_Hub.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
+  - enabled: 1
+    path: Assets/01.Scenes/04. Episodes/Edgar_Episode.unity
+    guid: 4e5cbc7fde1507240b2d2c53352f763f
+  - enabled: 1
+    path: Assets/01.Scenes/04. Episodes/Matilda_Episode.unity
+    guid: 84843993454cd184ca2eb7433db64644
+  - enabled: 1
+    path: Assets/01.Scenes/04. Episodes/Toby_Episode.unity
+    guid: 133f6de070ee51b47a7a012f10205554
+  - enabled: 1
+    path: Assets/01.Scenes/04. Episodes/Violet_Episode.unity
+    guid: 35ebeb52753ec9741959adec18a2e7e4
+  - enabled: 1
+    path: Assets/01.Scenes/04. Episodes/Ria_Episode.unity
+    guid: 52b0aed9cb1a0e94ca8e91132f2ecae2
+  - enabled: 1
+    path: Assets/01.Scenes/05. MiniGames/Edgar_Minigame.unity
+    guid: 07b7890b4a350104c84bcae64e87bb01
+  - enabled: 1
+    path: Assets/01.Scenes/05. MiniGames/Matilda_Minigame.unity
+    guid: e30ace066572e0b409b105f291cd9605
+  - enabled: 1
+    path: Assets/01.Scenes/05. MiniGames/Toby_Minigame.unity
+    guid: 2c3bd3af4ddae7a42971adacbe6e1f17
+  - enabled: 1
+    path: Assets/01.Scenes/05. MiniGames/Violet_Minigame.unity
+    guid: d5cf51e916b88924fbc98d72b2657570
+  - enabled: 1
+    path: Assets/01.Scenes/05. MiniGames/Ria_Minigame.unity
+    guid: 609d09261827d644da3669df45800661
+  - enabled: 1
+    path: Assets/01.Scenes/06. Ending/Epilogue.unity
+    guid: a6593bb85921b4c4db4f305fcf808acd
   m_configObjects: {}
