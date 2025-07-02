@@ -2,7 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameSaveData : MonoBehaviour
+[System.Serializable]
+public class GameSaveData
 {
     [Header("진행도 정보")] 
     public int completedTombstones = 0;

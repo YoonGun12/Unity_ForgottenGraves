@@ -115,7 +115,18 @@ public class Enums : MonoBehaviour
         Normal,         // 일반 대화
         Narration,      // 내레이션
         Thought,        // 생각/독백
-        Flashback       // 회상
+        Flashback,       // 회상
+        CutScene
+    }
+
+
+    public enum DialogueState
+    {
+        Inactive,
+        Active,
+        Typing,
+        WaitingForInput,
+        Completed
     }
     
     

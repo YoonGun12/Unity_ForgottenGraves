@@ -24,18 +24,14 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        if(!dialogueManager.isInteraction)
-            HandleInput();
+        HandleInput();
         Interaction();
     }
 
     private void FixedUpdate()
     {
-        if (!dialogueManager.isInteraction)
-        {
-            MovePlayer();
-            ScanForObjects();
-        }
+        MovePlayer();
+        ScanForObjects();
     }
 
     // 🕹️ 입력 처리
@@ -88,7 +84,7 @@ public class Player : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space) && scanObject != null)
         {
-            dialogueManager.Interaction(scanObject);
+            
         }
     }
 

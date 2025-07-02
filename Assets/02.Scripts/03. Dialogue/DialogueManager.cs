@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -5,97 +7,215 @@ using TMPro;
 
 public class DialogueManager : MonoBehaviour
 {
-    [Header("Dialogue UI")]
-    public GameObject dialogueBox;
-    public TextMeshProUGUI dialougeText;
-    public Image portraitImg;
-    public Sprite[] portraitArr;
+    public static DialogueManager Instance { get; private set; }
 
-    [Header("Dialogue Data")]
-    private Dictionary<int, string[]> talkData = new Dictionary<int, string[]>();
-    private Dictionary<int, Sprite> portraitData = new Dictionary<int, Sprite>();
-    private GameObject scanObject;
-    private int talkIndex;
-    public bool isInteraction;
+    [Header("UI 시스템")] 
+    [SerializeField] private DialogueUI dialogueUI;
+
+    [Header("대화설정")] 
+    [SerializeField] private Enums.DialogueMode currentMode = Enums.DialogueMode.Normal;
+    [SerializeField] private bool autoAdvance = false;
+    [SerializeField] private float autoAdvanceDelay = 2f;
+
+    private Enums.DialogueState currentState = Enums.DialogueState.Inactive;
+    private List<DialogueData> currentDialogueList;
+    private int currentDialogueIndex = 0;
+    private string currentSetName = "";
     
+    public static event Action<DialogueData> OnDialogueStarted;
+    public static event Action<DialogueData> OnDialogueChanged;
+    public static event Action<string> OnDialogueCompleted;
+    public static event Action<string> OnEventFlagTriggered;
+
+    private Coroutine autoAdvanceCoroutine;
+
     private void Awake()
     {
-        GenerateData();
-    }
-
-    private void GenerateData()
-    {
-        talkData.Add(2000, new string[] { "꼬마 묘지기 친구!:1", "내 이름은 리아야.\n보다시피 유령이지.. 흐흐:1" });
-        talkData.Add(100, new string[] { "핸즈필드 공동묘지", "묘지 입구 ->" });
-
-        // 초상화 데이터 추가 (0: Lyle, 1: Ria)
-        for (int i = 0; i < portraitArr.Length; i++)
+        if (Instance == null)
         {
-            portraitData.Add(2000 + i, portraitArr[i]);
-        }
-    }
-
-    public void Interaction(GameObject scanObj)
-    {
-        var objData = scanObj.GetComponent<InteractableObjData>();
-
-        if (!isInteraction)
-            StartDialogue(objData.id, objData.isNPC);
-        else
-            NextDialogue(objData.id, objData.isNPC);
-
-        dialogueBox.SetActive(isInteraction);
-    }
-
-    private void StartDialogue(int id, bool isNPC)
-    {
-        talkIndex = 0;
-        ShowDialogue(id, isNPC);
-        isInteraction = true;
-    }
-
-    private void NextDialogue(int id, bool isNPC)
-    {
-        talkIndex++;
-        if (!ShowDialogue(id, isNPC))
-            EndDialogue();
-    }
-
-    private bool ShowDialogue(int id, bool isNPC)
-    {
-        string currentTalk = GetTalk(id, talkIndex);
-        if (currentTalk == null) return false;
-
-        string[] talkParts = currentTalk.Split(":");
-        dialougeText.text = talkParts[0];
-
-        if (isNPC && talkParts.Length > 1 && int.TryParse(talkParts[1], out int portraitIndex))
-        {
-            portraitImg.sprite = GetPortrait(id, portraitIndex);
-            portraitImg.color = new Color(1, 1, 1, 1);
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+            Initialize();
         }
         else
         {
-            portraitImg.color = new Color(1, 1, 1, 0);
+            Destroy(gameObject);
+        }
+    }
+    
+    private void Initialize()
+    {
+        // DialogueUI가 없으면 찾기
+        if (dialogueUI == null)
+            dialogueUI = FindObjectOfType<DialogueUI>();
+
+        // 이벤트 구독
+        DialogueUI.OnNextButtonClicked += OnNextDialogue;
+        DialogueUI.OnTextTypingCompleted += OnTypingCompleted;
+    }
+
+    private void OnDestroy()
+    {
+        // 이벤트 구독 해제
+        DialogueUI.OnNextButtonClicked -= OnNextDialogue;
+        DialogueUI.OnTextTypingCompleted -= OnTypingCompleted;
+    }
+
+    public void StartDialogueSet(string setName, Enums.DialogueMode mode = Enums.DialogueMode.Normal)
+    {
+        if (DialogueDatabase.Instance == null) return;
+        var dialogueSet = DialogueDatabase.Instance.GetDialogueSet(setName);
+        if (dialogueSet == null) return;
+        StartDialogue(dialogueSet.dialogues, setName, mode);
+    }
+
+    public void StartDialogueRange(string setName, int startIndex, int count,
+        Enums.DialogueMode mode = Enums.DialogueMode.Normal)
+    {
+        if (DialogueDatabase.Instance == null) return;
+        var dialogueList = DialogueDatabase.Instance.GetDialogueRange(setName, startIndex, count);
+        if (dialogueList == null || dialogueList.Count == 0) return;
+        StartDialogue(dialogueList, setName, mode);
+    }
+
+    public void StartDialogue(List<DialogueData> dialogueList, string setName = "",
+        Enums.DialogueMode mode = Enums.DialogueMode.Normal)
+    {
+        if (dialogueList == null || dialogueList.Count == 0) return;
+
+        StopCurrentDialogue();
+
+        currentDialogueList = dialogueList;
+        currentDialogueIndex = 0;
+        currentSetName = setName;
+        currentMode = mode;
+        currentState = Enums.DialogueState.Active;
+        
+        if(dialogueUI != null)
+            dialogueUI.OpenDialogue();
+        OnDialogueStarted?.Invoke(GetCurrentDialogue());
+    }
+
+    public void StopCurrentDialogue()
+    {
+        if (currentState == Enums.DialogueState.Inactive) return;
+        currentState = Enums.DialogueState.Inactive;
+        if (autoAdvanceCoroutine != null)
+        {
+            StopCoroutine(autoAdvanceCoroutine);
+            autoAdvanceCoroutine = null;
+        }
+        
+        if(dialogueUI != null)
+            dialogueUI.CloseDialogue();
+
+        currentDialogueList = null;
+        currentDialogueIndex = 0;
+    }
+
+    public void NextDialogue()
+    {
+        if (currentState != Enums.DialogueState.Active) return;
+
+        if (dialogueUI != null && dialogueUI.IsTyping)
+        {
+            dialogueUI.CompleteTyping();
+            return;
         }
 
-        return true;
+        currentDialogueIndex++;
+
+        if (currentDialogueIndex < currentDialogueList.Count)
+        {
+            ShowCurrentDialogue();
+        }
+        else
+        {
+            CompleteDialogue();
+        }
     }
 
-    private void EndDialogue()
+    public bool IsDialogueActive()
     {
-        isInteraction = false;
-        dialogueBox.SetActive(false);
-        talkIndex = 0;
+        return currentState != Enums.DialogueState.Inactive;
     }
 
-    public string GetTalk(int id, int talkIndex)
+    public void SetAutoAdvance(bool enabled, float delay = 2f)
     {
-        return talkData.ContainsKey(id) && talkIndex < talkData[id].Length ? talkData[id][talkIndex] : null;
+        autoAdvance = enabled;
+        autoAdvanceDelay = delay;
     }
 
-    public Sprite GetPortrait(int id, int portraitIndex)
+    private void ShowCurrentDialogue()
     {
-        return portraitData.ContainsKey(id + portraitIndex) ? portraitData[id + portraitIndex] : null;
+        if (currentDialogueList == null || currentDialogueIndex >= currentDialogueList.Count) return;
+        var currentDialogue = GetCurrentDialogue();
+        if(dialogueUI != null)
+            dialogueUI.ShowDialogue(currentDialogue);
+
+        ProcessEventFlag(currentDialogue.eventFlag);
+        
+        OnDialogueChanged?.Invoke(currentDialogue);
+
+        if (autoAdvance && currentMode == Enums.DialogueMode.CutScene)
+        {
+            if(autoAdvanceCoroutine != null)
+                StopCoroutine(autoAdvanceCoroutine);
+
+            autoAdvanceCoroutine = StartCoroutine(AutoAdvanceCoroutine());
+        }
     }
+
+    private DialogueData GetCurrentDialogue()
+    {
+        if (currentDialogueList != null && currentDialogueIndex < currentDialogueList.Count)
+            return currentDialogueList[currentDialogueIndex];
+        return null;
+    }
+
+    private void CompleteDialogue()
+    {
+        string completedSetName = currentSetName;
+        
+        StopCurrentDialogue();
+        
+        OnDialogueCompleted?.Invoke(completedSetName);
+    }
+
+    private void ProcessEventFlag(string eventFlag)
+    {
+        if (string.IsNullOrEmpty(eventFlag)) return;
+        OnEventFlagTriggered?.Invoke(eventFlag);
+
+        switch (eventFlag.ToLower())
+        {
+            case "scene_transition" :
+                break;
+            case "save_game" :
+                break;
+            case "play_sound" :
+                break;
+        }
+    }
+
+    private IEnumerator AutoAdvanceCoroutine()
+    {
+        yield return new WaitForSeconds(autoAdvanceDelay);
+
+        if (currentState == Enums.DialogueState.Active && autoAdvance)
+        {
+            NextDialogue();
+        }
+    }
+
+    private void OnNextDialogue()
+    {
+        NextDialogue();
+    }
+
+    private void OnTypingCompleted()
+    {
+        currentState = Enums.DialogueState.WaitingForInput;
+    }
+
 }

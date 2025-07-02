@@ -26,6 +26,7 @@ public class GameManager : MonoBehaviour
     public SaveManager saveManager;
     public ProgressTracker progressTracker;
     public SceneTransitionManager sceneTransitionManager;
+    public DialogueDatabase dialogueDatabase;
 
     [Header("게임 이벤트")] 
     public Action<Enums.TombstoneType> OnTombstoneStarted;                      //묘비 에피소드 시작 이벤트
@@ -33,6 +34,7 @@ public class GameManager : MonoBehaviour
     public Action<Enums.EpisodePhase> OnPhaseChanged;                           //페이즈 전환시 이벤트
     public Action<Enums.SceneType> OnSceneChanged;                              //씬 변경시 이벤트
     public Action OnGameCompleted;                                              //게임 완료시 이벤트
+    
 
     private void Awake()
     {
@@ -192,7 +194,7 @@ public class GameManager : MonoBehaviour
     private void FindManagers()
     {
         if (dialogueManager == null)
-            dialogueManager = FindObjectOfType<DialogueManager>();
+            dialogueManager = GetComponent<DialogueManager>();
         
         if (audioManager == null)
             audioManager = FindObjectOfType<AudioManager>();
@@ -205,6 +207,9 @@ public class GameManager : MonoBehaviour
 
         if (sceneTransitionManager == null)
             sceneTransitionManager = FindObjectOfType<SceneTransitionManager>();
+
+        if (dialogueDatabase == null)
+            dialogueDatabase = GetComponent<DialogueDatabase>();
     }
 
     #region 묘비 에피소드 관리
