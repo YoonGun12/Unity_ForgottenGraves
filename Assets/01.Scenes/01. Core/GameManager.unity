@@ -311,7 +311,34 @@ MonoBehaviour:
   - {fileID: 4900000, guid: 561da127a717a5243851f8abd601cdd2, type: 3}
   - {fileID: 4900000, guid: 167725de349aad646995430ef90163b0, type: 3}
   - {fileID: 4900000, guid: be2acb882e4421a46ac2d07de178f8ae, type: 3}
-  characterPortraits: []
+  characterPortraits:
+  - characterName: "\uB77C\uC77C"
+    portraits:
+    - {fileID: 21300000, guid: a88df78ed63074a47b9ead756a6f1b30, type: 3}
+    - {fileID: 21300000, guid: a0dc167f15028d94c92de2957710a90d, type: 3}
+    - {fileID: 21300000, guid: dab13f7f668b7ed43850ffe50b05cb2a, type: 3}
+    - {fileID: 21300000, guid: 0a2e8dda4ed72e940b39fadfb98254c6, type: 3}
+    - {fileID: 21300000, guid: 6fca42a95b604bc41b01867751cacdcb, type: 3}
+    - {fileID: 21300000, guid: 8580238062fa6aa42be8aac20e8f3f17, type: 3}
+    - {fileID: 21300000, guid: 5f83b9d77d4f56e4b9286246afdb6ea7, type: 3}
+    - {fileID: 21300000, guid: 5f83b9d77d4f56e4b9286246afdb6ea7, type: 3}
+    - {fileID: 21300000, guid: 5f83b9d77d4f56e4b9286246afdb6ea7, type: 3}
+    - {fileID: 21300000, guid: 5f83b9d77d4f56e4b9286246afdb6ea7, type: 3}
+  - characterName: "\uD560\uC544\uBC84\uC9C0"
+    portraits:
+    - {fileID: 21300000, guid: a876a0d378e269941ac473f53c0bb7c5, type: 3}
+    - {fileID: 21300000, guid: 690355276a78c2e45b19e0556198bdd5, type: 3}
+    - {fileID: 21300000, guid: 4dc09cc21cbedcf4ea671e3ba371b5c8, type: 3}
+  - characterName: "\uB9AC\uC544"
+    portraits:
+    - {fileID: 21300000, guid: 76ee1e190deab2c44ad131d0fd9c39ea, type: 3}
+    - {fileID: 21300000, guid: 254c2d1494ab7a345a4f10d60619d4b5, type: 3}
+    - {fileID: 21300000, guid: 290acd108cdf05145babab51a78c905b, type: 3}
+    - {fileID: 21300000, guid: 042014e3e91b53e45ab52b1bb91eb0dc, type: 3}
+    - {fileID: 21300000, guid: ce6e2dca79b3f6b4f875db6a0d082095, type: 3}
+    - {fileID: 21300000, guid: 7ab417afccc4715448266e7fbd50cbc2, type: 3}
+    - {fileID: 21300000, guid: d33ff7dabcb919148a1ecb08d28b81d4, type: 3}
+    - {fileID: 21300000, guid: 13d66198b1a64ba48b8ff39da1cabd9f, type: 3}
 --- !u!114 &936019494
 MonoBehaviour:
   m_ObjectHideFlags: 0
