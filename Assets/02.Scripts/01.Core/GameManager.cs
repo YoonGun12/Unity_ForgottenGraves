@@ -54,6 +54,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         StartCoroutine(WaitForSceneLoad());
+        StartCoroutine(LoadMainMenuAfterInit());
     }
 
     private IEnumerator WaitForSceneLoad()
@@ -66,6 +67,13 @@ public class GameManager : MonoBehaviour
 
         SetGameStateFromScene();
         OnSceneChanged?.Invoke(currentScene);
+    }
+
+    private IEnumerator LoadMainMenuAfterInit()
+    {
+        yield return new WaitUntil(() => DialogueDatabase.Instance.IsLoaded);
+
+        SceneManager.LoadScene("MainMenu");
     }
 
     /// <summary>

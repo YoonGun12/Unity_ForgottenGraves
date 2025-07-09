@@ -5,6 +5,13 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// 1. 대화창, 텍스트, 캐릭터 초상화 등 UI 요소를 표시
+/// 2. 타이핑 효과로 텍스트를 한글자씩 보여주기
+/// 3. 대화창 열기/닫기 애니메이션
+/// 4. 사용자 입력 처리
+/// 5. DialogueManager와 이벤트로 소통
+/// </summary>
 public class DialogueUI : MonoBehaviour
 {
     [Header("UI 요소들")]
@@ -40,12 +47,17 @@ public class DialogueUI : MonoBehaviour
         SetupUI();
     }
 
+    /// <summary>
+    /// UI 초기 설정
+    /// </summary>
     private void SetupUI()
     {
         if (dialoguePanel != null)
             dialoguePanel.SetActive(false);
+            
         if(nextButton != null)
             nextButton.onClick.AddListener(OnNextButtonClick);
+            
         if(continueIndicator != null)
             continueIndicator.SetActive(false);
 
@@ -53,32 +65,50 @@ public class DialogueUI : MonoBehaviour
         isTyping = false;
     }
 
+    /// <summary>
+    /// 대화창을 열기
+    /// </summary>
     public void OpenDialogue()
     {
         if (isActive) return;
+        
+        if (dialoguePanel == null) return;
+        
         isActive = true;
-        if (dialoguePanel != null)
-        {
-            dialoguePanel.SetActive(true);
-            StartCoroutine(FadeInPanel());
-        }
+        dialoguePanel.SetActive(true);
+        StartCoroutine(FadeInPanel());
         OnDialogueUIOpened?.Invoke();
     }
 
+    /// <summary>
+    /// 대화창 닫기
+    /// </summary>
     public void CloseDialogue()
     {
         if (!isActive) return;
         StartCoroutine(CloseDialogueCoroutine());
     }
 
+    /// <summary>
+    /// 특정 대화 데이터를 화면에 표시
+    /// </summary>
     public void ShowDialogue(DialogueData dialogueData)
     {
         if (dialogueData == null) return;
+
+        if (!isActive)
+        {
+            OpenDialogue();
+        }
+
         SetSpeakerName(dialogueData.speaker);
         SetCharacterPortrait(dialogueData.speaker, dialogueData.portraitIndex);
         StartTyping(dialogueData.text);
     }
 
+    /// <summary>
+    /// 현재 진행중인 타이핑 효과를 즉시 완료
+    /// </summary>
     public void CompleteTyping()
     {
         if (isTyping && typingCoroutine != null)
@@ -91,18 +121,25 @@ public class DialogueUI : MonoBehaviour
     public bool IsTyping => isTyping;
     public bool IsActive => isActive;
 
+    /// <summary>
+    /// 이름을 UI에 설정
+    /// </summary>
     private void SetSpeakerName(string speakerName)
     {
-        if (speakerName != null)
+        if (speakerNameText != null)
         {
             speakerNameText.text = speakerName;
             speakerNameText.gameObject.SetActive(!string.IsNullOrEmpty(speakerName));
         }
     }
 
+    /// <summary>
+    /// 캐릭터 초상화를 UI에 설정
+    /// </summary>
     private void SetCharacterPortrait(string characterName, int portraitIndex)
     {
         if (characterPortrait == null) return;
+        
         Sprite portrait = DialogueDatabase.Instance?.GetCharacterPortrait(characterName, portraitIndex);
         if (portrait != null)
         {
@@ -116,6 +153,9 @@ public class DialogueUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 타이핑 효과
+    /// </summary>
     private void StartTyping(string text)
     {
         currentFullText = text;
@@ -137,11 +177,6 @@ public class DialogueUI : MonoBehaviour
         {
             if (dialogueText != null)
                 dialogueText.text = text.Substring(0, i);
-
-            if (enableTypingSound && i < text.Length)
-            {
-                
-            }
 
             yield return new WaitForSeconds(typingSpeed);
         }
@@ -195,6 +230,7 @@ public class DialogueUI : MonoBehaviour
         
         if(dialoguePanel != null)
             dialoguePanel.SetActive(false);
+            
         OnDialogueUIClosed?.Invoke();
     }
 
@@ -247,5 +283,4 @@ public class DialogueUI : MonoBehaviour
             }
         }
     }
-
 }
