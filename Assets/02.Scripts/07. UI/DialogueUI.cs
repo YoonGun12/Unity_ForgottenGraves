@@ -271,7 +271,7 @@ public class DialogueUI : MonoBehaviour
     
     private void Update()
     {
-        if (isActive && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)))
+        if (isActive && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0)))
         {
             if (isTyping)
             {
