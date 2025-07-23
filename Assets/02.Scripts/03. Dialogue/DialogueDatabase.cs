@@ -272,7 +272,7 @@ public class DialogueDatabase : MonoBehaviour
         switch (characterName.ToLower())
         {
             case "라일":
-                return csvIndex;
+                return csvIndex - 1;
 
             case "할아버지":
                 return csvIndex - 11;
