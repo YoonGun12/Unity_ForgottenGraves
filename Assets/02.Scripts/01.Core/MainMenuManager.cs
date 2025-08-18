@@ -303,7 +303,7 @@ public class MainMenuManager : MonoBehaviour
         }
         
         // 프롤로그 씬으로 이동
-        StartCoroutine(LoadGameWithFade("Prologue2"));
+        StartCoroutine(LoadGameWithFade("Prologue3"));
     }
     
     /// <summary>
