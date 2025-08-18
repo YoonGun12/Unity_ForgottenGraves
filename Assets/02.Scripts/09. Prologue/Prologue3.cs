@@ -166,8 +166,8 @@ public class Prologue3 : MonoBehaviour
         yield return new WaitForSeconds(0.5f); // 잠시 대기
     }
 
-    // <summary>
-    /// 시퀀스 1: 리아 등장, 이동, 첫 대화
+    /// <summary>
+    /// 시퀀스 1: 리아 등장, 이동, 첫 대화 (수정됨)
     /// </summary>
     private IEnumerator Sequence1_RiaEntersAndApproaches()
     {
@@ -181,11 +181,12 @@ public class Prologue3 : MonoBehaviour
             
             if (riaScript != null)
             {
-                // 모든 유령효과 완전 비활성화
+                // ✅ 리아를 완전히 일반 캐릭터 모드로 설정
+                riaScript.SetNormalCharacterMode(true);
                 riaScript.SetGhostEffectActive(false);
                 riaScript.SetVisible(true);
-                riaScript.SetFloatingSettings(0f, 0f); // 떠다니는 효과 완전 끄기
-                riaScript.SetFlickeringEnabled(false); // 깜빡이는 효과 끄기
+                riaScript.SetFloatingSettings(0f, 0f);
+                riaScript.SetFlickeringEnabled(false);
             }
             
             yield return StartCoroutine(SetCharacterDirection(riaAnimator, "up"));
@@ -193,34 +194,26 @@ public class Prologue3 : MonoBehaviour
         
         yield return new WaitForSeconds(0.5f); 
         
-        // WP0으로 이동
+        // ✅ 각 이동마다 명확하게 설정
         if (waypoints.Length > 0)
         {
             yield return StartCoroutine(MoveCharacterToPoint(ria, waypoints[0], riaAnimator));
-            ria.position = waypoints[0].position; 
             yield return new WaitForSeconds(0.2f);
         }
         
-        // WP1으로 이동
         if (waypoints.Length > 1)
         {
             yield return StartCoroutine(MoveCharacterToPoint(ria, waypoints[1], riaAnimator));
-            ria.position = waypoints[1].position; 
             yield return new WaitForSeconds(0.2f);
         }
         
-        // WP2로 이동 (라일 뒤에 위치)
         if (waypoints.Length > 2)
         {
             yield return StartCoroutine(MoveCharacterToPoint(ria, waypoints[2], riaAnimator));
-            ria.position = waypoints[2].position; 
-            
-            if (riaScript != null)
-            {
-                riaScript.SetOriginalPosition(waypoints[2].position);
-            }
+            yield return new WaitForSeconds(0.2f);
         }
         
+        // 대화 진행...
         yield return new WaitForSeconds(1f); 
         
         if (DialogueManager.Instance != null)
@@ -236,14 +229,11 @@ public class Prologue3 : MonoBehaviour
         }
         yield return new WaitForSeconds(1f); 
         
-        // 리아 위치 재확인
-        ria.position = waypoints[2].position;
-        
         // 라일이 뒤를 돌아봄
         yield return StartCoroutine(SetCharacterDirection(lyleAnimator, "down"));
         yield return new WaitForSeconds(0.5f);
         
-        // 라일 "으....!?"
+        // 후속 대화들...
         if (DialogueManager.Instance != null)
         {
             DialogueManager.Instance.StartDialogueRangeByIndex(prologueCSVIndex, 2, 1, Enums.DialogueMode.Normal);
@@ -252,10 +242,6 @@ public class Prologue3 : MonoBehaviour
         }
         yield return new WaitForSeconds(1f);
         
-        // 리아 위치 재확인
-        ria.position = waypoints[2].position;
-        
-        // 리아 "까꿍~!" 
         if (DialogueManager.Instance != null)
         {
             DialogueManager.Instance.StartDialogueRangeByIndex(prologueCSVIndex, 3, 1, Enums.DialogueMode.Normal);
@@ -265,25 +251,14 @@ public class Prologue3 : MonoBehaviour
         
         yield return new WaitForSeconds(1f); 
         
-        // 리아 위치 재확인
-        ria.position = waypoints[2].position;
-        
-        // 라일이 침대로 도망 (리아 위치 계속 고정)
+        // 라일이 침대로 도망
         if (waypoints.Length > 3)
         {
-            // 리아 위치를 계속 WP2에 고정하는 코루틴 시작
-            
             yield return StartCoroutine(MoveCharacterToPoint(lyle, waypoints[3], lyleAnimator));
             
             if (waypoints.Length > 4)
             {
                 yield return StartCoroutine(MoveCharacterToPoint(ria, waypoints[4], riaAnimator));
-                ria.position = waypoints[4].position; // 위치 강제 고정
-        
-                if (riaScript != null)
-                {
-                    riaScript.SetOriginalPosition(waypoints[4].position); // originalPosition도 WP4로 변경
-                }
             }
         }
         
@@ -295,7 +270,7 @@ public class Prologue3 : MonoBehaviour
         yield return StartCoroutine(SetCharacterDirection(riaAnimator, "right"));
         yield return new WaitForSeconds(0.5f);
         
-        // 라일 "유...유령...!"
+        // 마지막 대화
         if (DialogueManager.Instance != null)
         {
             DialogueManager.Instance.StartDialogueRangeByIndex(prologueCSVIndex, 4, 1, Enums.DialogueMode.Normal);
@@ -304,8 +279,6 @@ public class Prologue3 : MonoBehaviour
         }
         
         yield return new WaitForSeconds(1f);
-        
-        ria.position = waypoints[4].position;
     }
 
     /// <summary>
@@ -331,6 +304,7 @@ public class Prologue3 : MonoBehaviour
     
         // 시계 이야기가 나오면 리아가 위쪽을 바라봄 (시계 방향)
         yield return StartCoroutine(SetCharacterDirection(riaAnimator, "up"));
+        
     
         // 시계 관련 대화
         if (DialogueManager.Instance != null)
@@ -349,13 +323,13 @@ public class Prologue3 : MonoBehaviour
     }
 
     /// <summary>
-    /// 시퀀스 3: 함께 밖으로 나가기 (기존 Sequence5)
+    /// 시퀀스 3: 함께 밖으로 나가기 (리아 이동 설정 강화)
     /// </summary>
     private IEnumerator Sequence3_LeavingTogether()
     {
         currentSequence = 3;
         
-        // 마지막 대화 (그래, 문은 다시 열렸고...)
+        // 마지막 대화
         if (DialogueManager.Instance != null)
         {
             DialogueManager.Instance.StartDialogueRangeByIndex(prologueCSVIndex, 23, 2, Enums.DialogueMode.CutScene);
@@ -363,21 +337,33 @@ public class Prologue3 : MonoBehaviour
             yield return new WaitUntil(() => !DialogueManager.Instance.IsDialogueActive());
         }
         
-        // 유령효과 끄고 함께 이동 시작
+        // ✅ 연속 이동을 위한 리아 초기 설정
         if (riaScript != null)
         {
+            riaScript.SetNormalCharacterMode(true);
             riaScript.SetGhostEffectActive(false);
+            riaScript.SetFloatingSettings(0f, 0f);
+            riaScript.SetFlickeringEnabled(false);
         }
         
         // 새로운 경로: WP2 → WP1 → WP0 → WP5 순으로 이동
         if (waypoints.Length > 5)
         {
-            // 1단계: WP2로 이동 (리아는 이미 WP2에 있고, 라일만 이동)
+            // 1단계: WP2로 이동 (리아는 이미 WP4에 있고, 라일만 이동)
             Coroutine lyleToWP2 = StartCoroutine(MoveCharacterToPoint(lyle, waypoints[2], lyleAnimator));
             yield return lyleToWP2;
             yield return new WaitForSeconds(0.3f);
             
             // 2단계: 둘이 함께 WP1으로 이동
+            granpaWatch.SetActive(false);
+            
+            // ✅ 리아 이동 전 상태 재확인
+            if (riaScript != null)
+            {
+                riaScript.SetNormalCharacterMode(true);
+                riaScript.SetMoving(true);
+            }
+            
             Coroutine riaToWP1 = StartCoroutine(MoveCharacterToPoint(ria, waypoints[1], riaAnimator));
             Coroutine lyleToWP1 = StartCoroutine(MoveCharacterToPoint(lyle, waypoints[1], lyleAnimator));
             yield return riaToWP1;
@@ -385,6 +371,14 @@ public class Prologue3 : MonoBehaviour
             yield return new WaitForSeconds(0.3f);
             
             // 3단계: 둘이 함께 WP0으로 이동
+            
+            // ✅ 리아 이동 전 상태 재확인
+            if (riaScript != null)
+            {
+                riaScript.SetNormalCharacterMode(true);
+                riaScript.SetMoving(true);
+            }
+            
             Coroutine riaToWP0 = StartCoroutine(MoveCharacterToPoint(ria, waypoints[0], riaAnimator));
             Coroutine lyleToWP0 = StartCoroutine(MoveCharacterToPoint(lyle, waypoints[0], lyleAnimator));
             yield return riaToWP0;
@@ -392,6 +386,14 @@ public class Prologue3 : MonoBehaviour
             yield return new WaitForSeconds(0.3f);
             
             // 4단계: 마지막으로 WP5(문)로 이동
+            
+            // ✅ 리아 이동 전 상태 재확인
+            if (riaScript != null)
+            {
+                riaScript.SetNormalCharacterMode(true);
+                riaScript.SetMoving(true);
+            }
+            
             Coroutine riaToWP5 = StartCoroutine(MoveCharacterToPoint(ria, waypoints[5], riaAnimator));
             Coroutine lyleToWP5 = StartCoroutine(MoveCharacterToPoint(lyle, waypoints[5], lyleAnimator));
             yield return riaToWP5;
@@ -430,14 +432,26 @@ public class Prologue3 : MonoBehaviour
     #region 캐릭터 이동 및 애니메이션
 
     /// <summary>
-    /// 캐릭터를 특정 지점으로 이동
+    /// 캐릭터를 특정 지점으로 이동 (리아용 특별 처리 및 디버깅 포함)
     /// </summary>
     private IEnumerator MoveCharacterToPoint(Transform character, Transform targetPoint, Animator animator)
     {
         if(character == null || targetPoint == null) yield break;
 
+        string characterName = character == ria ? "리아" : "라일";
+
+        // ✅ 리아인 경우 이동 모드 활성화
+        bool isRiaCharacter = character == ria;
+        if (isRiaCharacter && riaScript != null)
+        {
+            riaScript.SetNormalCharacterMode(true);
+            riaScript.SetMoving(true);
+            riaScript.SetGhostEffectActive(false);
+        }
+
         Vector2 startPos = character.position;
         Vector2 targetPos = targetPoint.position;
+        
         
         // 수평 이동
         if (Mathf.Abs(startPos.x - targetPos.x) > 0.1f)
@@ -459,10 +473,19 @@ public class Prologue3 : MonoBehaviour
             animator.SetInteger("h", 0);
             animator.SetInteger("v", 0);
         }
+
+        // ✅ 리아인 경우 이동 모드 비활성화 및 위치 업데이트
+        if (isRiaCharacter && riaScript != null)
+        {
+            riaScript.SetMoving(false);
+            riaScript.SetOriginalPosition(targetPoint.position);
+        }
+        
     }
-    
+
     private IEnumerator MoveHorizontal(Transform character, float targetX, Animator animator)
     {
+        string characterName = character == ria ? "리아" : "라일";
         Vector2 direction = Vector2.right * Mathf.Sign(targetX - character.position.x);
         
         if (animator != null)
@@ -470,13 +493,25 @@ public class Prologue3 : MonoBehaviour
             animator.SetInteger("h", (int)direction.x);
             animator.SetInteger("v", 0);
             animator.SetBool("isChange", true);
+            
+            // 애니메이션 상태 확인
+            yield return new WaitForEndOfFrame();
         }
         
+        float startTime = Time.time;
         while (Mathf.Abs(character.position.x - targetX) > 0.1f)
         {
             Vector2 newPos = character.position;
+            float oldX = newPos.x;
             newPos.x = Mathf.MoveTowards(newPos.x, targetX, moveSpeed * Time.deltaTime);
             character.position = newPos;
+            
+            // 5초마다 진행 상황 로그
+            if (Time.time - startTime > 1f)
+            {
+                startTime = Time.time;
+            }
+            
             yield return null;
         }
         
@@ -484,9 +519,10 @@ public class Prologue3 : MonoBehaviour
         correctedPos.x = targetX;
         character.position = correctedPos;
     }
-    
+
     private IEnumerator MoveVertical(Transform character, float targetY, Animator animator)
     {
+        string characterName = character == ria ? "리아" : "라일";
         Vector2 direction = Vector2.up * Mathf.Sign(targetY - character.position.y);
         
         if (animator != null)
@@ -494,27 +530,39 @@ public class Prologue3 : MonoBehaviour
             animator.SetInteger("h", 0);
             animator.SetInteger("v", (int)direction.y);
             animator.SetBool("isChange", true);
+            
         }
-        
         while (Mathf.Abs(character.position.y - targetY) > 0.1f)
         {
             Vector2 newPos = character.position;
+            float oldY = newPos.y;
             newPos.y = Mathf.MoveTowards(newPos.y, targetY, moveSpeed * Time.deltaTime);
             character.position = newPos;
+            
             yield return null;
         }
         
         Vector2 correctedPos = character.position;
         correctedPos.y = targetY;
         character.position = correctedPos;
+        
     }
-    
+
     /// <summary>
-    /// 캐릭터 방향 설정
+    /// 캐릭터 방향 설정 (리아용 특별 처리 및 디버깅 포함)
     /// </summary>
     private IEnumerator SetCharacterDirection(Animator animator, string direction)
     {
         if (animator == null) yield break;
+
+        string characterName = animator == riaAnimator ? "리아" : "라일";
+
+        // ✅ 리아인 경우 잠시 일반 캐릭터 모드로 전환
+        bool isRiaAnimator = animator == riaAnimator;
+        if (isRiaAnimator && riaScript != null)
+        {
+            riaScript.SetNormalCharacterMode(true);
+        }
 
         switch (direction.ToLower())
         {
@@ -539,10 +587,12 @@ public class Prologue3 : MonoBehaviour
         }
 
         animator.SetBool("isChange", true);
+        
         yield return new WaitForSeconds(0.1f);
         
         animator.SetInteger("h", 0);
         animator.SetInteger("v", 0);
+        
     }
 
     #endregion

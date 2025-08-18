@@ -32,6 +32,9 @@ public class Ria : MonoBehaviour
     private bool isAppearing = false;
     private bool isDisappearing = false;
 
+    private bool isMoving = false;
+    private bool isNormalCharacterMode = false;
+
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -45,6 +48,26 @@ public class Ria : MonoBehaviour
 
     void Update()
     {
+        // ✅ 수정: 일반 캐릭터 모드에서는 떠다니는 효과만 비활성화
+        // 애니메이션 시스템은 자유롭게 작동하도록 허용
+        if (isNormalCharacterMode)
+        {
+            // 일반 캐릭터 모드에서는 유령 효과만 비활성화
+            // transform.position은 애니메이션 시스템이 자유롭게 제어
+            return;
+        }
+        
+        if (isMoving)
+        {
+            // 이동 중에는 떠다니는 효과만 비활성화
+            // 투명도 효과는 유지 (필요시)
+            if (ghostEffectActive && enableGhostEffect && !isAppearing && !isDisappearing)
+            {
+                UpdateFadeEffect();
+            }
+            return;
+        }
+        
         if (ghostEffectActive)
         {
             if (enableGhostEffect && !isAppearing && !isDisappearing)
@@ -104,7 +127,7 @@ public class Ria : MonoBehaviour
         {
             yield return new WaitForSeconds(flickerInterval);
             
-            if (ghostEffectActive && !isAppearing && !isDisappearing)
+            if (ghostEffectActive && !isAppearing && !isDisappearing && !isMoving && !isNormalCharacterMode)
             {
                 yield return StartCoroutine(Flicker());
             }
@@ -132,7 +155,50 @@ public class Ria : MonoBehaviour
     #endregion
 
     #region 공개 메서드 (외부 제어용)
-
+    
+    /// <summary>
+    /// ✅ 수정: 일반 캐릭터 모드 설정
+    /// </summary>
+    public void SetNormalCharacterMode(bool enabled)
+    {
+        isNormalCharacterMode = enabled;
+        
+        if (enabled)
+        {
+            
+            // 유령 효과만 비활성화, 위치 제어는 애니메이션 시스템에 맡김
+            ghostEffectActive = false;
+            
+            // 투명도를 1로 고정
+            if (spriteRenderer != null)
+            {
+                Color color = spriteRenderer.color;
+                color.a = 1f;
+                spriteRenderer.color = color;
+            }
+        }
+        else
+        {
+            // 유령 모드로 복귀
+            ghostEffectActive = true;
+            originalPosition = transform.position;
+        }
+    }
+    
+    /// <summary>
+    /// ✅ 수정: 이동 모드 설정
+    /// </summary>
+    public void SetMoving(bool moving)
+    {
+        isMoving = moving;
+        
+        if (!moving)
+        {
+            // 이동이 끝나면 현재 위치를 원래 위치로 설정
+            originalPosition = transform.position;
+        }
+    }
+    
     /// <summary>
     /// 유령 효과 활성화/비활성화
     /// </summary>
@@ -146,7 +212,6 @@ public class Ria : MonoBehaviour
             Color color = spriteRenderer.color;
             color.a = 1f;
             spriteRenderer.color = color;
-            transform.position = originalPosition;
         }
     }
 
@@ -303,6 +368,7 @@ public class Ria : MonoBehaviour
     public bool IsAppearing() => isAppearing;
     public bool IsDisappearing() => isDisappearing;
     public bool IsGhostEffectActive() => ghostEffectActive;
+    public bool IsMoving() => isMoving;
 
     #endregion
 }
