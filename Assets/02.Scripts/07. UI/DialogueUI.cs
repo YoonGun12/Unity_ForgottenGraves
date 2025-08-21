@@ -19,7 +19,6 @@ public class DialogueUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI speakerNameText;
     [SerializeField] private TextMeshProUGUI dialogueText;
     [SerializeField] private Image characterPortrait;
-    [SerializeField] private Button nextButton;
     [SerializeField] private GameObject continueIndicator; 
 
     [Header("타이핑 설정")]
@@ -54,9 +53,6 @@ public class DialogueUI : MonoBehaviour
     {
         if (dialoguePanel != null)
             dialoguePanel.SetActive(false);
-            
-        if(nextButton != null)
-            nextButton.onClick.AddListener(OnNextButtonClick);
             
         if(continueIndicator != null)
             continueIndicator.SetActive(false);
@@ -128,7 +124,12 @@ public class DialogueUI : MonoBehaviour
     {
         if (speakerNameText != null)
         {
-            speakerNameText.text = speakerName;
+            string displayName = speakerName;
+
+            if (speakerName == "나래이션")
+                displayName = "";
+            
+            speakerNameText.text = displayName;
             speakerNameText.gameObject.SetActive(!string.IsNullOrEmpty(speakerName));
         }
     }

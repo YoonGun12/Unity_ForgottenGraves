@@ -332,7 +332,7 @@ public class Prologue1 : MonoBehaviour
                 break;
             
             case "scene_end":
-                StartCoroutine(FadeOut());
+                StartCoroutine(WaitForUserInputThenFadeOut());
                 break;
         }
     }
@@ -390,5 +390,32 @@ public class Prologue1 : MonoBehaviour
     }
 
     #endregion
+    
+    private IEnumerator WaitForUserInput()
+    {
+        while (true)
+        {
+            if (Input.GetKeyDown(KeyCode.Space) || 
+                Input.GetKeyDown(KeyCode.Return) || 
+                Input.GetMouseButtonDown(0))
+            {
+                break;
+            }
+            yield return null;
+        }
+    }
+    
+    // 사용자 입력 대기 후 페이드아웃 실행
+    private IEnumerator WaitForUserInputThenFadeOut()
+    {
+        // 대화가 완전히 끝날 때까지 대기 (타이핑 완료 등)
+        yield return new WaitUntil(() => !DialogueManager.Instance.IsDialogueActive());
+    
+        // 사용자 입력 대기
+        yield return StartCoroutine(WaitForUserInput());
+    
+        // 사용자 입력 후 페이드아웃 실행
+        yield return StartCoroutine(FadeOut());
+    }
     
 }
