@@ -6,14 +6,14 @@ public class Ria : MonoBehaviour
 {
     [Header("유령 효과 설정")]
     [SerializeField] private bool enableGhostEffect = true;
-    [SerializeField] private float fadeSpeed = 2f;              // 투명도 변화 속도
-    [SerializeField] private float minAlpha = 0.3f;             // 최소 투명도
+    [SerializeField] private float fadeSpeed = 0.3f;              // 투명도 변화 속도
+    [SerializeField] private float minAlpha = 0.5f;             // 최소 투명도
     [SerializeField] private float maxAlpha = 1f;               // 최대 투명도
     
     [Header("떠다니는 효과")]
     [SerializeField] private bool enableFloating = true;
     [SerializeField] private float floatSpeed = 1f;             // 떠다니는 속도
-    [SerializeField] private float floatHeight = 0.2f;          // 떠다니는 높이
+    [SerializeField] private float floatHeight = 0.05f;          // 떠다니는 높이
     
     [Header("깜빡이는 효과")]
     [SerializeField] private bool enableFlickering = false;
@@ -34,6 +34,9 @@ public class Ria : MonoBehaviour
 
     private bool isMoving = false;
     private bool isNormalCharacterMode = false;
+    
+    private bool allowFadeEffect = true;        //투명도 변화 효과 허용
+    private bool allowFloatingEffect = true;   //떠다니는 효과 허용
 
     void Start()
     {
@@ -48,20 +51,17 @@ public class Ria : MonoBehaviour
 
     void Update()
     {
-        // ✅ 수정: 일반 캐릭터 모드에서는 떠다니는 효과만 비활성화
         // 애니메이션 시스템은 자유롭게 작동하도록 허용
         if (isNormalCharacterMode)
         {
-            // 일반 캐릭터 모드에서는 유령 효과만 비활성화
-            // transform.position은 애니메이션 시스템이 자유롭게 제어
+            if(ghostEffectActive && enableGhostEffect && allowFadeEffect && !isAppearing && !isDisappearing)
+                UpdateFadeEffect();
             return;
         }
         
         if (isMoving)
         {
-            // 이동 중에는 떠다니는 효과만 비활성화
-            // 투명도 효과는 유지 (필요시)
-            if (ghostEffectActive && enableGhostEffect && !isAppearing && !isDisappearing)
+            if (ghostEffectActive && enableGhostEffect && allowFadeEffect && !isAppearing && !isDisappearing)
             {
                 UpdateFadeEffect();
             }
@@ -70,12 +70,12 @@ public class Ria : MonoBehaviour
         
         if (ghostEffectActive)
         {
-            if (enableGhostEffect && !isAppearing && !isDisappearing)
+            if (enableGhostEffect && allowFadeEffect && !isAppearing && !isDisappearing)
             {
                 UpdateFadeEffect();
             }
             
-            if (enableFloating)
+            if (enableFloating && allowFloatingEffect)
             {
                 UpdateFloatingEffect();
             }
@@ -165,28 +165,23 @@ public class Ria : MonoBehaviour
         
         if (enabled)
         {
+            allowFadeEffect = false;
+            allowFadeEffect = true;
             
-            // 유령 효과만 비활성화, 위치 제어는 애니메이션 시스템에 맡김
-            ghostEffectActive = false;
-            
-            // 투명도를 1로 고정
-            if (spriteRenderer != null)
-            {
-                Color color = spriteRenderer.color;
-                color.a = 1f;
-                spriteRenderer.color = color;
-            }
+            ghostEffectActive = true;
         }
         else
         {
             // 유령 모드로 복귀
+            allowFloatingEffect = true;
+            allowFadeEffect = true;
             ghostEffectActive = true;
             originalPosition = transform.position;
         }
     }
     
     /// <summary>
-    /// ✅ 수정: 이동 모드 설정
+    /// 이동 모드 설정
     /// </summary>
     public void SetMoving(bool moving)
     {
@@ -194,8 +189,44 @@ public class Ria : MonoBehaviour
         
         if (!moving)
         {
-            // 이동이 끝나면 현재 위치를 원래 위치로 설정
+            allowFloatingEffect = false;
+            allowFadeEffect = true;
+        }
+        else
+        {
+            allowFloatingEffect = true;
+            allowFadeEffect = true;
             originalPosition = transform.position;
+        }
+    }
+
+    /// <summary>
+    /// 투명도 효과만 제어
+    /// </summary>
+    /// <param name="enabled"></param>
+    public void SetFadeEffectEnabled(bool enabled)
+    {
+        allowFadeEffect = enabled;
+
+        if (!enabled && spriteRenderer != null)
+        {
+            Color color = spriteRenderer.color;
+            color.a = 1f;
+            spriteRenderer.color = color;
+        }
+    }
+
+    /// <summary>
+    /// 떠다니는 효과만 제어
+    /// </summary>
+    /// <param name="enabled"></param>
+    public void SetFloatingEffectEnabled(bool enabled)
+    {
+        allowFloatingEffect = enabled;
+
+        if (!enabled)
+        {
+            transform.position = originalPosition;
         }
     }
     
